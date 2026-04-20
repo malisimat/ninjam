@@ -18,42 +18,57 @@ WDL/
   vorbisencdec.h    ← OGG Vorbis encoder/decoder wrapper
   jnetlib/          ← Minimal TCP networking (asyncdns, connection, util)
   *.h / sha.cpp     ← WDL support headers and crypto
-CMakeLists.txt      ← Build system
+njclient.vcxproj    ← MSBuild project (Visual Studio / MSBuild)
+deps.props          ← OGG / Vorbis include path configuration
 ```
 
 ---
 
 ## Dependencies
 
-| Dependency | Purpose | Install (Ubuntu/Debian) |
+| Dependency | Purpose | Install |
 |---|---|---|
-| **libvorbis** + **libvorbisenc** | OGG Vorbis audio codec | `sudo apt install libvorbis-dev` |
-| **libogg** | OGG bitstream framing | `sudo apt install libogg-dev` |
-| **pthreads** | Thread-safe async DNS (Linux/macOS) | bundled with OS |
+| **libvorbis** + **libvorbisenc** | OGG Vorbis audio codec | `vcpkg install libvorbis:x64-windows-static` |
+| **libogg** | OGG bitstream framing | `vcpkg install libogg:x64-windows-static` |
 
-macOS (Homebrew): `brew install libvorbis libogg`
+**vcpkg** (recommended): install [vcpkg](https://github.com/microsoft/vcpkg) and run:
 
-Windows: obtain the Vorbis SDK from https://xiph.org/downloads/ and add the include/lib paths to your build system.
+```bat
+vcpkg install libogg:x64-windows-static libvorbis:x64-windows-static
+```
+
+**Manual**: download pre-built Windows binaries from https://xiph.org/downloads/ and configure the paths in `deps.props`.
 
 ---
 
 ## Building
 
-### CMake (Linux / macOS / Windows)
+### MSBuild (Windows)
 
-```sh
-mkdir build && cd build
-cmake ..
-cmake --build .
-```
+1. **Configure dependency paths** in `deps.props`:
 
-This produces `libnjclient.a` (Linux/macOS) or `njclient.lib` (Windows).
+   ```xml
+   <OggIncludeDir>C:\path\to\vcpkg\installed\x64-windows-static\include</OggIncludeDir>
+   <VorbisIncludeDir>C:\path\to\vcpkg\installed\x64-windows-static\include</VorbisIncludeDir>
+   ```
 
-To install headers and the archive:
+   With vcpkg both headers live under the same `include` directory, so both properties point to the same path.
 
-```sh
-cmake --install . --prefix /usr/local
-```
+2. **Build from the command line:**
+
+   ```bat
+   "C:\Program Files\Microsoft Visual Studio\18\Community\MSBuild\Current\Bin\MSBuild.exe" ^
+       njclient.vcxproj /p:Configuration=Release /p:Platform=x64
+   ```
+
+   Or for a Debug build:
+
+   ```bat
+   "C:\Program Files\Microsoft Visual Studio\18\Community\MSBuild\Current\Bin\MSBuild.exe" ^
+       njclient.vcxproj /p:Configuration=Debug /p:Platform=x64
+   ```
+
+3. **Output**: `bin\x64\Release\njclient.lib` (or `bin\x64\Debug\njclient.lib`).
 
 ### Makefile (Linux / macOS)
 
