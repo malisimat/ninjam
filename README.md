@@ -61,6 +61,18 @@ vcpkg install libogg:x64-windows-static libvorbis:x64-windows-static
        njclient.vcxproj /p:Configuration=Release /p:Platform=x64
    ```
 
+   Build both runtime variants explicitly:
+
+   ```bat
+   rem Release MT
+   "C:\Program Files\Microsoft Visual Studio\18\Community\MSBuild\Current\Bin\MSBuild.exe" ^
+       njclient.vcxproj /p:Configuration=Release /p:Platform=x64 /p:NinjamRuntimeMode=Static
+
+   rem Release MD
+   "C:\Program Files\Microsoft Visual Studio\18\Community\MSBuild\Current\Bin\MSBuild.exe" ^
+       njclient.vcxproj /p:Configuration=Release /p:Platform=x64 /p:NinjamRuntimeMode=Dynamic
+   ```
+
    Or for a Debug build:
 
    ```bat
@@ -68,7 +80,23 @@ vcpkg install libogg:x64-windows-static libvorbis:x64-windows-static
        njclient.vcxproj /p:Configuration=Debug /p:Platform=x64
    ```
 
-3. **Output**: `bin\x64\Release\njclient.lib` (or `bin\x64\Debug\njclient.lib`).
+   And for both Debug runtime variants:
+
+   ```bat
+   rem Debug MT
+   "C:\Program Files\Microsoft Visual Studio\18\Community\MSBuild\Current\Bin\MSBuild.exe" ^
+       njclient.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:NinjamRuntimeMode=Static
+
+   rem Debug MD
+   "C:\Program Files\Microsoft Visual Studio\18\Community\MSBuild\Current\Bin\MSBuild.exe" ^
+       njclient.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:NinjamRuntimeMode=Dynamic
+   ```
+
+3. **Output**:
+   - `bin\x64\Release\MT\njclient.lib`
+   - `bin\x64\Release\MD\njclient.lib`
+   - `bin\x64\Debug\MT\njclient.lib`
+   - `bin\x64\Debug\MD\njclient.lib`
 
 ### Makefile (Linux / macOS)
 
