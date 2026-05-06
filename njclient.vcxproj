@@ -92,6 +92,7 @@
       <LanguageStandard>stdcpp14</LanguageStandard>
       <RuntimeLibrary>$(NinjamRuntimeLibrary)</RuntimeLibrary>
       <DisableSpecificWarnings>4244;4267;4018;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <DebugInformationFormat>None</DebugInformationFormat>
     </ClCompile>
   </ItemDefinitionGroup>
 
