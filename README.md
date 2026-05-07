@@ -4,6 +4,13 @@ A minimal, buildable extraction of the [NINJAM](https://www.cockos.com/ninjam/) 
 
 The public API surface is `ninjam/njclient.h`. Everything else in this repository is an implementation detail.
 
+For downstream integration, you only need two deliverables:
+
+- `njclient.h`
+- the matching `njclient.lib`
+
+The `WDL/` tree remains a build-time implementation dependency for this repository, but consumers no longer need to copy any WDL headers into their own project just to include `njclient.h`.
+
 ---
 
 ## Repository Layout
@@ -138,6 +145,8 @@ clean:
 #include "njclient.h"
 ```
 
+No other NINJAM or WDL headers are required by consumers.
+
 ### 2. Connect to a server
 
 ```cpp
@@ -209,7 +218,7 @@ for (int u = 0; u < nusers; u++) {
 
 - **`AudioProc()`** must be called from your **audio thread only**. No mutex is required by the caller.
 - **`Run()`** must be called from a **single dedicated thread** (not the audio thread).
-- All other `Get*`/`Set*` methods on remote channel state should be called with `client.m_remotechannel_rd_mutex` held if called outside the `Run()` thread.
+- All other `Get*`/`Set*` methods on remote channel state should be called with `client.m_remotechannel_rd_mutex` held if called outside the `Run()` thread. `WDL_Mutex` and `WDL_MutexLock` are provided directly by `njclient.h`, so no extra mutex header is required.
 
 ### Working directory
 

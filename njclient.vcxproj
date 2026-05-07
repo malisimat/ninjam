@@ -65,6 +65,7 @@
     <OutDir>$(MSBuildProjectDirectory)\bin\$(Platform)\$(Configuration)\$(NinjamRuntimeTag)\</OutDir>
     <IntDir>$(MSBuildProjectDirectory)\obj\$(Platform)\$(Configuration)\$(NinjamRuntimeTag)\</IntDir>
     <TargetName>njclient</TargetName>
+    <ClientIntegrationOutDir>$(MSBuildProjectDirectory)\output\</ClientIntegrationOutDir>
   </PropertyGroup>
 
   <!-- ===== Debug ===== -->
@@ -78,6 +79,9 @@
       <RuntimeLibrary>$(NinjamRuntimeLibrary)</RuntimeLibrary>
       <DisableSpecificWarnings>4244;4267;4018;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
+    <Lib>
+      <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
+    </Lib>
   </ItemDefinitionGroup>
 
   <!-- ===== Release ===== -->
@@ -123,6 +127,29 @@
     <ClInclude Include="WDL\jnetlib\asyncdns.h" />
     <ClInclude Include="WDL\jnetlib\util.h" />
   </ItemGroup>
+
+  <Target Name="PackageClientIntegration" AfterTargets="Build">
+    <PropertyGroup>
+      <ClientIntegrationPlatformDir>$(ClientIntegrationOutDir)$(Platform)\$(Configuration)\$(NinjamRuntimeTag)\</ClientIntegrationPlatformDir>
+      <BuiltPdbPath>$(OutDir)$(TargetName).pdb</BuiltPdbPath>
+    </PropertyGroup>
+
+    <MakeDir Directories="$(ClientIntegrationOutDir)" />
+    <MakeDir Directories="$(ClientIntegrationPlatformDir)" />
+
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\ninjam\njclient.h"
+          DestinationFiles="$(ClientIntegrationOutDir)njclient.h"
+          SkipUnchangedFiles="true" />
+
+    <Copy SourceFiles="$(TargetPath)"
+          DestinationFolder="$(ClientIntegrationPlatformDir)"
+          SkipUnchangedFiles="true" />
+
+    <Copy Condition="Exists('$(BuiltPdbPath)')"
+          SourceFiles="$(BuiltPdbPath)"
+          DestinationFolder="$(ClientIntegrationPlatformDir)"
+          SkipUnchangedFiles="true" />
+  </Target>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 
