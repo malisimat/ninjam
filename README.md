@@ -9,6 +9,8 @@ For downstream integration, you only need two deliverables:
 - `njclient.h`
 - the matching `njclient.lib`
 
+Every build now also packages those client-facing deliverables into `output/` so consumers can copy from a single location instead of pulling files from `bin/` and `ninjam/` separately.
+
 The `WDL/` tree remains a build-time implementation dependency for this repository, but consumers no longer need to copy any WDL headers into their own project just to include `njclient.h`.
 
 ---
@@ -99,11 +101,22 @@ vcpkg install libogg:x64-windows-static libvorbis:x64-windows-static
        njclient.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:NinjamRuntimeMode=Dynamic
    ```
 
-3. **Output**:
+3. **Build output**:
    - `bin\x64\Release\MT\njclient.lib`
    - `bin\x64\Release\MD\njclient.lib`
    - `bin\x64\Debug\MT\njclient.lib`
    - `bin\x64\Debug\MD\njclient.lib`
+
+4. **Packaged integration output**:
+    - `output\njclient.h`
+    - `output\x64\Release\MT\njclient.lib`
+    - `output\x64\Release\MD\njclient.lib`
+    - `output\x64\Debug\MT\njclient.lib`
+    - `output\x64\Debug\MD\njclient.lib`
+    - `output\x64\Debug\MT\njclient.pdb`
+    - `output\x64\Debug\MD\njclient.pdb`
+
+    Release builds do not produce PDBs. Debug builds package the matching `njclient.pdb` beside the library.
 
 ### Makefile (Linux / macOS)
 
@@ -139,7 +152,17 @@ clean:
 
 ## Integrating into Your Project
 
-### 1. Include the header
+### 1. Copy the packaged files
+
+From `output/`, copy:
+
+- `njclient.h`
+- the matching `x64\<Configuration>\<MT|MD>\njclient.lib`
+- the matching `njclient.pdb` for Debug builds if you want debugger symbols
+
+Choose `MT` when your application links the static CRT and `MD` when it links the dynamic CRT.
+
+### 2. Include the header
 
 ```cpp
 #include "njclient.h"
@@ -147,7 +170,7 @@ clean:
 
 No other NINJAM or WDL headers are required by consumers.
 
-### 2. Connect to a server
+### 3. Connect to a server
 
 ```cpp
 NJClient client;
@@ -163,14 +186,14 @@ client.ChatMessage_Callback = [](void *, NJClient *, const char **parms, int n) 
 client.Connect("hostname.example.com:2049", "username", "password");
 ```
 
-### 3. Drive the Run loop (separate thread or timer, ≤50 ms cadence)
+### 4. Drive the Run loop (separate thread or timer, ≤50 ms cadence)
 
 ```cpp
 // In your network/UI thread:
 while (!client.Run()); // Run() returns 0 when it wants to be called again immediately
 ```
 
-### 4. Drive audio from your audio thread
+### 5. Drive audio from your audio thread
 
 ```cpp
 // Called from your audio callback (e.g. JACK, PortAudio, CoreAudio):
@@ -181,7 +204,7 @@ client.AudioProc(inbuf, innch, outbuf, outnch, len, sampleRate);
 `AudioProc` handles all encoding, decoding, mixing, and metering internally.
 It is safe to call from a dedicated audio thread concurrently with `Run()`.
 
-### 5. Set up a local channel for transmit
+### 6. Set up a local channel for transmit
 
 ```cpp
 // Register channel 0 as a mono input from hardware input channel 0:
@@ -194,7 +217,7 @@ client.SetLocalChannelInfo(
 );
 ```
 
-### 6. Query remote user state (for a custom UI)
+### 7. Query remote user state (for a custom UI)
 
 ```cpp
 int nusers = client.GetNumUsers();
